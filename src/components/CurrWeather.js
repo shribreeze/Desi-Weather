@@ -89,7 +89,7 @@ useEffect(() => {
                     <div className="col-md-3 text-start">
                       <p className="large mt-3 mb-5 pb-5"><strong>More Info</strong></p>
                       <p className="pb-1"><span className="pe-2">Wind Speed</span> <strong>{weather.wind_spd}</strong> m/s</p>
-                      <p className="pb-1"><span className="pe-2">Vision</span> <strong>{weather.vis}</strong> km</p>
+                      <p className="pb-1"><span className="pe-2">Visibility</span> <strong>{weather.vis}</strong> km</p>
                       <p className="pb-1"><span className="pe-2">Humidity</span> <strong>{weather.rh}</strong> %</p>
                       <p className="pb-1"><span className="pe-2">Pressure</span> <strong>{weather.pres}</strong> mb</p>
                       <p className="pb-1"><span className="pe-2">UV Index</span> <strong>{weather.uv}</strong>+</p>
