@@ -2,72 +2,68 @@ import React from 'react'
 import { useState, useEffect } from 'react';
 
 const CurrWeather = () => {
+  const [weather, setWeather] = useState([]);
+  const [error, setError] = useState(null);
 
-    const  key = process.env.API_KEY;
+  // const apiKey = process.env.API_KEY;
+  const apiKey = '1a1f3b0675834561a135b02ee422d6f2';
 
-    const data = [  
-        {  
-           "wind_cdir":"NE",
-           "rh":59,
-           "pod":"d",
-           "lon":-78.63861,
-           "pres":1006.6,
-           "timezone":"America\/New_York",
-           "ob_time":"2017-08-28 16:45",
-           "country_code":"US",
-           "clouds":75,
-           "vis":10,
-           "wind_spd":6.17,
-           "gust": 8,
-           "wind_cdir_full":"northeast",
-           "app_temp":24.25,
-           "state_code":"NC",
-           "ts":1503936000,
-           "h_angle":0,
-           "dewpt":15.65,
-           "weather":{  
-              "icon":"c03d",
-              "code": 803,
-              "description":"Broken clouds"
-           },
-           "uv":2,
-           "aqi":45,
-           "station":"CMVN7",
-           "sources": ["rtma", "CMVN7"],
-           "wind_dir":50,
-           "elev_angle":63,
-           "datetime":"2017-08-28:17",
-           "precip":0,
-           "ghi":444.4,
-           "dni":500,
-           "dhi":120,
-           "solar_rad":350,
-           "city_name":"Raleigh",
-           "sunrise":"10:44",
-           "sunset":"23:47",
-           "temp":24.19,
-           "lat":35.7721,
-           "slp":1022.2
-        }
-     ]
-
-    const [Data, setData] = useState([]);
-    useEffect(() => {
-        fetch('https://api.weatherbit.io/v2.0/current?lat=35.7796&lon=-78.6382&key=1a1f3b0675834561a135b02ee422d6f2&include=minutely').then((res) => {
-            return res.json();
-          }).then((data) => {
-            console.log(data);
-            setData(data);
+  const fetchWeather = (lat, lon) => {
+      const url = `https://api.weatherbit.io/v2.0/current?lat=${lat}&lon=${lon}&key=${apiKey}&units=M`;
+      console.log('Fetching weather data from URL:', url);
+      fetch(url, {
+        method: 'GET',
+            headers: {
+                'Accept': 'application/json'
+            }
+      })
+          .then(response => response.json())
+          .then(data => {
+              if (data && data.data && data.data.length > 0) {
+                  setWeather(data.data[0]);
+              } else {
+                  setError('No weather data available.');
+              }
+          })
+          .catch(error => {
+              console.error('Error fetching weather data:', error);
+              setError('Error fetching weather data.');
           });
-      }, []);
+  };
 
-    //   const cityName = data[0]?.city_name;
-      const CurData = data[0];
+  // const WeatherImg = weather.weather && weather.weather.icon;
+
+  // const fetchImage = () => {
+  //   const url = `https://cdn.weatherbit.io/static/img/icons/${WeatherImg}.png`
+  //   console.log('This is img url:', url);
+  // }
+
+const getLocation = () => {
+  if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+          (position) => {
+              const lat = position.coords.latitude;
+              const lon = position.coords.longitude;
+              fetchWeather(lat, lon);
+          },
+          (error) => {
+              console.error('Error getting location:', error);
+              setError('Unable to retrieve location.');
+          }
+      );
+  } else {
+      setError('Geolocation is not supported by this browser.');
+  }
+};
+
+useEffect(() => {
+  getLocation();
+}, []);
 
 
   return (
     <>
-    <section className="vh-100" style={{backgroundColor: "#cdc4f9"}}>
+    <section className="vh-80">
   <div className="container py-5 h-100">
     <div className="row d-flex justify-content-center align-items-center h-100">
       <div className="col-md-12 col-xl-10">
@@ -79,64 +75,33 @@ const CurrWeather = () => {
               <div className="col-md-9 text-center border-end border-5 border-dark py-4"
                 style={{marginTop: "-1.5rem", marginBottom: "-1.5rem"}}>
                 <div className="d-flex justify-content-around mt-3">
-                  <p className="small">{CurData.city_name}</p>
-                  <p className="small">{CurData.datetime}</p>
-                  <p className="small">Rain map</p>
+                  <p className="small">{weather.city_name}, {weather.country_code}</p>
+                  <p className="small">{weather.timezone}</p>
+                  <p className="small">{weather.weather && weather.weather.icon}</p> 
+                  {/* <img height="50" width="50" alt="Weather Img" src={fetchImage}></img> */}
                 </div>
                 <div className="d-flex justify-content-around align-items-center py-5 my-4">
-                  <p className="fw-bold mb-0" style={{fontSize: "7rem"}}>-4°C</p>
+                  <p className="fw-bold mb-0" style={{fontSize: "7rem"}}>{weather.temp}°C</p>
                   <div className="text-start">
-                    <p className="small">10:00</p>
-                    <p className="h3 mb-3">Sunday</p>
-                    <p className="small mb-0">Cloudy</p>
+                    <p className="large">Feels like {weather.app_temp}°C</p>
+                    <p className="h3 mb-3">{weather.ob_time}</p>
+                    <p className="large mb-0">{weather.weather && weather.weather.description}</p>
                   </div>
                 </div>
-                <div className="d-flex justify-content-around align-items-center mb-3">
-                  <div className="flex-column">
-                    <i className="fas fa-minus"></i>
-                  </div>
-                  <div className="flex-column border" style={{borderRadius: "10px", padding: ".75rem"}}>
-                    <p className="small mb-1">Sun</p>
-                    <p className="small mb-0"><strong>{CurData.temp}</strong></p>
-                  </div>
-                  <div className="flex-column">
-                    <p className="small mb-1">Mon</p>
-                    <p className="small mb-0"><strong>-4°C</strong></p>
-                  </div>
-                  <div className="flex-column">
-                    <p className="small mb-1">Tue</p>
-                    <p className="small mb-0"><strong>-4°C</strong></p>
-                  </div>
-                  <div className="flex-column">
-                    <p className="small mb-1">Wed</p>
-                    <p className="small mb-0"><strong>-4°C</strong></p>
-                  </div>
-                  <div className="flex-column">
-                    <p className="small mb-1">Thu</p>
-                    <p className="small mb-0"><strong>-4°C</strong></p>
-                  </div>
-                  <div className="flex-column">
-                    <p className="small mb-1">Fri</p>
-                    <p className="small mb-0"><strong>-4°C</strong></p>
-                  </div>
-                  <div className="flex-column">
-                    <p className="small mb-1">Sat</p>
-                    <p className="small mb-0"><strong>-4°C</strong></p>
-                  </div>
-                  <div className="flex-column">
-                    <i className="fas fa-minus"></i>
-                  </div>
+                <div className='d-flex justify-content-around'>
+                  <p className="small">Sunrise: {weather.sunrise}</p>
+                  <p className="small">Sunset: {weather.sunset}</p>
                 </div>
               </div>
-              <div className="col-md-3 text-end">
-                <p className="small mt-3 mb-5 pb-5">For a month</p>
-                <p className="pb-1"><span className="pe-2">11:00</span> <strong>-4°</strong></p>
-                <p className="pb-1"><span className="pe-2">12:00</span> <strong>-4°</strong></p>
-                <p className="pb-1"><span className="pe-2">13:00</span> <strong>-5°</strong></p>
-                <p className="pb-1"><span className="pe-2">14:00</span> <strong>-7°</strong></p>
-                <p className="pb-1"><span className="pe-2">15:00</span> <strong>-6°</strong></p>
-                <p className="pb-1"><span className="pe-2">16:00</span> <strong>-4°</strong></p>
-                <p><span className="pe-2">17:00</span> <strong>-3°</strong></p>
+              <div className="col-md-3 text-start">
+                <p className="large mt-3 mb-5 pb-5"><strong>More Info</strong></p>
+                <p className="pb-1"><span className="pe-2">Wind Speed</span> <strong>{weather.wind_spd}</strong> m/s</p>
+                <p className="pb-1"><span className="pe-2">Vision</span> <strong>{weather.vis}</strong> km</p>
+                <p className="pb-1"><span className="pe-2">Humidity</span> <strong>{weather.rh}</strong> %</p>
+                <p className="pb-1"><span className="pe-2">Pressure</span> <strong>{weather.pres}</strong> mb</p>
+                <p className="pb-1"><span className="pe-2">UV Index</span> <strong>{weather.uv}</strong>+</p>
+                <p className="pb-1"><span className="pe-2">Cloud coverage</span> <strong>{weather.clouds}</strong> %</p>
+                <p><span className="pe-2">Part of the day</span> <strong>{weather.pod}</strong></p>
               </div>
             </div>
 
@@ -147,36 +112,6 @@ const CurrWeather = () => {
     </div>
   </div>
 </section>
-
-
-<input type="hidden" name="client_ip" value="45.248.159.10"/>
-                                         <input name="_csrf_token" type="hidden" value="Ijg0NmYwMzBlYzAyMzc0ZjU3MjJmM2MyMTA0MzIyZjU1N2QzMjFmMzEi.Zm4BtA.6uZAHOqZugUFHA2xoaHkmOgL7p8"/>
-
-                                         <div class="location">
-
-                                            <span data-api="location">Mohali, IN</span>
-
-                                         </div>
-
-                                         <div class="main_left">
-
-                                            <i data-api="current_icon" class="night"></i>
-                                            <span data-api="current_main_descr">Clear Sky</span>
-
-                                         </div>
-
-                                         <div class="main_right">
-
-                                            <span data-api="current_wind_speed" class="wind">Wind: 3 m/s</span>
-                                            <span data-api="current_precip" class="precip">Precip: 0 mm/hr</span>
-                                            <span data-api="current_snow" class="snow"></span>
-                                            <span data-api="current_pressure" class="pressure">Pressure: 988 mb</span>
-                                            <div class="hidden-temp">Temperature:</div><span data-api="current_temperature" class="temperature">33°C</span>
-
-                                         </div>
-
-                                         <div data-api="forecast_week" class="week"><div class="day dn0"><span class="name">MON</span><i class="full_sun"></i><span class="temperature">45 °C / 31 °C</span></div><div class="day dn1"><span class="name">TUE</span><i class="full_sun"></i><span class="temperature">46 °C / 32 °C</span></div><div class="day dn2"><span class="name">WED</span><i class="full_sun"></i><span class="temperature">46 °C / 32 °C</span></div><div class="day dn3"><span class="name">THU</span><i class="partly_cloudy"></i><span class="temperature">45 °C / 26 °C</span></div><div class="day dn4"><span class="name">FRI</span><i class="thunder"></i><span class="temperature">43 °C / 32 °C</span></div><div class="day dn5"><span class="name">SAT</span><i class="partly_cloudy"></i><span class="temperature">44 °C / 33 °C</span></div></div>
-
     </>
   )
 }
